@@ -1,14 +1,13 @@
 import { INDUSTRIES } from './industry-taxonomy.js';
 import { QUESTION_OPTIONS, normalizeAnswers, validateAnswers } from './schema.js';
 import { diagnose } from './rule-engine.js';
+import { createPdfObjectUrl, prepareReportPdf, releasePdfObjectUrl, savePreparedPdf } from './pdf-export.js';
 
 const main = document.querySelector('#main');
-const toast = document.querySelector('#toast');
 const sales = Object.freeze({
   id: String(window.WC_SALES?.id || 'default'),
-  name: String(window.WC_SALES?.name || '专属顾问'),
-  phone: String(window.WC_SALES?.phone || '').trim(),
-  wechat: String(window.WC_SALES?.wechat || '').trim(),
+  accountName: String(window.WC_SALES?.accountName || '万成云商｜中国制造出海'),
+  consultantName: String(window.WC_SALES?.consultantName || 'Cici｜企业出海顾问'),
   qrImage: String(window.WC_SALES?.qrImage || '').trim(),
 });
 
@@ -32,11 +31,15 @@ const questions = [
   { key: 'channels', stage: 3, title: '你现在正在使用哪些海外推广方式？', description: '可以多选；如果还没有开始，选择“还没有开始”。' },
   { key: 'problem', stage: 3, title: '你当前最想解决的问题是什么？', description: '系统会据此判断问题更偏流量、转化、成交还是客户沉淀。' },
   { key: 'team', stage: 3, title: '你的团队能否承接海外客户？', description: '引流前先确认由谁接收、回复和持续跟进客户。' },
-  { key: 'timeline', stage: 4, title: '你计划什么时候开始？', description: '最后一步。结果将在本机直接生成，不要求填写手机号。' },
+  { key: 'timeline', stage: 4, title: '你计划什么时候开始？', description: '最后一步。结果将在当前设备直接生成，无需提交联系方式。' },
 ];
 
 const stageNames = ['企业基础', '产品与客户', '市场准备', '当前推广', '启动计划'];
 let diagnosisSession = null;
+let preparedPdf = null;
+let preparedPdfUrl = '';
+let pdfPreparation = null;
+let pdfGenerationToken = 0;
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -49,14 +52,6 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll('`', '&#096;');
-}
-
-function showToast(message) {
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.add('show');
-  window.clearTimeout(showToast.timer);
-  showToast.timer = window.setTimeout(() => toast.classList.remove('show'), 2600);
 }
 
 function safeParse(value, fallback = {}) {
@@ -80,14 +75,23 @@ function setRoute(route) {
 }
 
 function resetDiagnosis() {
+  clearPreparedPdf();
   localStorage.removeItem(storageKeys.answers);
   localStorage.removeItem(storageKeys.step);
   localStorage.removeItem(storageKeys.report);
   diagnosisSession = null;
 }
 
+function clearPreparedPdf() {
+  pdfGenerationToken += 1;
+  releasePdfObjectUrl(preparedPdfUrl);
+  preparedPdf = null;
+  preparedPdfUrl = '';
+  pdfPreparation = null;
+}
+
 function renderHome() {
-  document.title = `万成云商｜企业出海决策系统｜${sales.name}`;
+  document.title = `${sales.accountName}｜企业出海决策系统`;
   main.innerHTML = `
     <section class="hero">
       <div class="shell hero-grid">
@@ -100,7 +104,7 @@ function renderHome() {
             <a class="button button-secondary" href="#how-it-works">先看判断逻辑</a>
           </div>
           <div class="trust-line" aria-label="诊断说明">
-            <span>结果直接免费展示</span><span>无需填写手机号</span><span>给出具体判断依据</span>
+            <span>结果直接免费展示</span><span>无需提交联系方式</span><span>给出具体判断依据</span>
           </div>
         </div>
         <aside class="decision-panel" aria-label="诊断输出预览">
@@ -136,7 +140,7 @@ function renderHome() {
         <div class="section-heading">
           <p class="eyebrow">免费诊断结果</p>
           <h2 class="section-title">做完以后，你会得到什么？</h2>
-          <p class="section-lead">先看到简版方向，再自行打开并保存完整报告；不会弹出电话收集表单。</p>
+          <p class="section-lead">先看到简版方向，再自行打开并保存完整报告；不会弹出信息收集表单。</p>
         </div>
         <div class="result-preview-grid">
           <article class="preview-card"><span class="preview-icon">✓</span><h3>海外推广判断</h3><p>适合启动、小步验证，或先补基础条件，并说明具体原因。</p></article>
@@ -150,7 +154,7 @@ function renderHome() {
     <section class="closing-cta">
       <div class="shell">
         <h2>先花3分钟，把出海顺序排清楚。</h2>
-        <p>诊断结果在浏览器中直接生成，不收集联系电话。</p>
+        <p>诊断结果在浏览器中直接生成，不收集个人联系方式。</p>
         <button class="button button-primary" data-go="diagnosis" type="button">开始免费诊断 <span aria-hidden="true">→</span></button>
       </div>
     </section>`;
@@ -381,7 +385,7 @@ function renderShortResult() {
     return;
   }
   const date = new Date(record.createdAt).toLocaleString('zh-CN', { hour12: false });
-  document.title = `简版出海方案｜${record.result.meta.industryName}｜万成云商`;
+  document.title = `简版出海方案｜${record.result.meta.industryName}｜${sales.accountName}`;
   main.innerHTML = `<div class="result-page"><div class="result-shell">
     <div class="result-toolbar"><p>诊断生成于 ${escapeHtml(date)}</p><button class="button button-small button-ghost" data-restart type="button">重新诊断</button></div>
     ${resultHero(record)}
@@ -389,7 +393,7 @@ function renderShortResult() {
     <section class="report-gate no-print">
       <p class="eyebrow">完整报告已经生成</p>
       <h2>继续查看网站结构、渠道顺序与90天计划</h2>
-      <p>完整报告不要求填写电话；打开后会同时显示专属顾问的姓名、微信和二维码。</p>
+      <p>完整报告无需填写任何联系方式；打开后会同时显示顾问姓名和二维码。</p>
       <button id="open-full-report" class="button button-primary button-wide button-hero" type="button">查看并保存完整报告 →</button>
     </section>
     <p class="result-disclaimer">本诊断仅用于企业海外推广决策参考，不对询盘数量、搜索排名、成交结果或投资回报作保证。</p>
@@ -398,29 +402,85 @@ function renderShortResult() {
   main.querySelector('#open-full-report').addEventListener('click', () => setRoute('report'));
 }
 
-function contactValue(label, value, kind) {
-  if (!value) return `<div class="contact-line"><span>${escapeHtml(label)}</span><strong class="pending-value">待填写</strong></div>`;
-  const href = kind === 'phone' ? `tel:${encodeURIComponent(value)}` : '';
-  return `<div class="contact-line"><span>${escapeHtml(label)}</span>${href ? `<a href="${href}">${escapeHtml(value)}</a>` : `<strong>${escapeHtml(value)}</strong>`}<button class="copy-button no-print" data-copy="${escapeAttribute(value)}" type="button">复制</button></div>`;
-}
-
 function consultantCard() {
   const qr = sales.qrImage
-    ? `<img class="consultant-qr" src="${escapeAttribute(sales.qrImage)}" alt="${escapeAttribute(sales.name)}的微信二维码">`
-    : `<div class="qr-placeholder" aria-label="二维码待填写"><span>二维码位置</span><small>待填写</small></div>`;
+    ? `<img class="consultant-qr" src="${escapeAttribute(sales.qrImage)}" alt="${escapeAttribute(sales.consultantName)}的二维码">`
+    : `<div class="qr-placeholder" aria-label="顾问二维码待补充"><span>顾问二维码</span><small>稍后补充</small></div>`;
   return `<section class="consultant-card" id="consultant">
     <div class="consultant-copy">
-      <p class="eyebrow">专属出海顾问</p>
-      <h2>添加 ${escapeHtml(sales.name)}，继续获得免费支持</h2>
-      <p>添加您的专属出海顾问，可免费获得一次人工分析，根据企业现状梳理并定制出海方案，同时领取对应行业的出海资料。</p>
-      <div class="contact-lines">
-        ${contactValue('顾问姓名', sales.name)}
-        ${contactValue('联系电话', sales.phone, 'phone')}
-        ${contactValue('微信号', sales.wechat, 'wechat')}
-      </div>
+      <p class="eyebrow">免费人工复核</p>
+      <h2>${escapeHtml(sales.consultantName)}</h2>
+      <p>添加顾问，可免费获得一次企业出海人工分析、定制出海方案建议，并领取对应行业的出海资料。</p>
     </div>
-    <div class="consultant-qr-wrap">${qr}<p>长按识别或扫码添加微信</p></div>
+    <div class="consultant-qr-wrap">${qr}<p>${sales.qrImage ? '长按识别或扫码添加顾问' : '二维码补充后可长按识别或扫码添加顾问'}</p></div>
   </section>`;
+}
+
+function updatePdfControls({ busy = false, message = '', retry = false } = {}) {
+  main.querySelectorAll('[data-download-pdf]').forEach((button) => {
+    button.disabled = busy;
+    button.textContent = busy ? '正在准备 PDF…' : retry ? '重新生成 PDF' : button.dataset.readyLabel;
+  });
+  main.querySelectorAll('[data-pdf-status]').forEach((status) => {
+    status.textContent = message;
+    status.classList.toggle('error', retry);
+  });
+}
+
+function configurePdfFallback() {
+  main.querySelectorAll('[data-pdf-fallback]').forEach((link) => {
+    link.href = preparedPdfUrl;
+    link.download = preparedPdf.fileName;
+  });
+}
+
+function showPdfFallback() {
+  main.querySelectorAll('[data-pdf-fallback]').forEach((link) => { link.hidden = false; });
+}
+
+async function startPdfPreparation(reportContainer) {
+  clearPreparedPdf();
+  const token = pdfGenerationToken;
+  updatePdfControls({ busy: true, message: '正在生成可下载的 PDF，请稍候…' });
+  const task = prepareReportPdf({ container: reportContainer, accountName: sales.accountName });
+  pdfPreparation = task;
+  try {
+    const result = await task;
+    if (token !== pdfGenerationToken) return null;
+    preparedPdf = result;
+    preparedPdfUrl = createPdfObjectUrl(result.blob);
+    configurePdfFallback();
+    updatePdfControls({ message: 'PDF 已准备好，点击即可保存到手机或电脑。' });
+    return result;
+  } catch (error) {
+    if (token !== pdfGenerationToken) return null;
+    updatePdfControls({ message: 'PDF 准备失败，请点击按钮重新生成。', retry: true });
+    return null;
+  } finally {
+    if (token === pdfGenerationToken) pdfPreparation = null;
+  }
+}
+
+async function handlePdfDownload(reportContainer) {
+  if (!preparedPdf) {
+    const result = pdfPreparation ? await pdfPreparation.catch(() => null) : await startPdfPreparation(reportContainer);
+    if (!result && !preparedPdf) return;
+  }
+  updatePdfControls({ busy: true, message: '正在打开保存窗口…' });
+  try {
+    const outcome = await savePreparedPdf(preparedPdf);
+    showPdfFallback();
+    if (outcome === 'shared') {
+      updatePdfControls({ message: '系统保存窗口已打开，请选择“存储到文件”或发送给自己。' });
+    } else if (outcome === 'cancelled') {
+      updatePdfControls({ message: '已取消保存，可以再次点击下载。' });
+    } else {
+      updatePdfControls({ message: 'PDF 下载已开始；如果没有反应，请点击下方备用入口。' });
+    }
+  } catch {
+    showPdfFallback();
+    updatePdfControls({ message: '自动保存没有启动，请点击下方备用入口打开 PDF。' });
+  }
 }
 
 function renderFullReport() {
@@ -451,10 +511,10 @@ function renderFullReport() {
     : '<div class="all-ready">当前关键基础条件相对齐全，下一步重点是小步验证并根据真实数据优化。</div>';
   const date = new Date(record.createdAt).toLocaleString('zh-CN', { hour12: false });
 
-  document.title = `完整出海方案｜${result.meta.industryName}｜万成云商`;
+  document.title = `完整出海方案｜${result.meta.industryName}｜${sales.accountName}`;
   main.innerHTML = `<div class="result-page full-report-page"><div class="result-shell">
-    <div class="result-toolbar no-print"><p>诊断生成于 ${escapeHtml(date)}</p><div><button class="button button-small button-secondary" data-print type="button">保存为 PDF</button> <button class="button button-small button-ghost" data-restart type="button">重新诊断</button></div></div>
-    <div class="report-cover-note">万成云商 · ${escapeHtml(sales.name)}专属版本</div>
+    <div class="result-toolbar no-print"><p>诊断生成于 ${escapeHtml(date)}</p><div><button class="button button-small button-secondary" data-download-pdf data-ready-label="下载 PDF" type="button" disabled>正在准备 PDF…</button> <button class="button button-small button-ghost" data-restart type="button">重新诊断</button></div></div>
+    <div class="report-cover-note">${escapeHtml(sales.accountName)} · 企业出海诊断报告</div>
     ${resultHero(record)}
     ${resultSection(1, '海外推广判断', '不是判断“能不能出海”，而是判断现在应该怎么启动。', `<div class="issue-banner"><span>${escapeHtml(result.primaryIssue.type)}</span><h3>${escapeHtml(result.primaryIssue.title)}</h3><p>${escapeHtml(result.primaryIssue.explanation)}</p></div>`)}
     ${resultSection(2, '为什么这样判断', `系统从你的产品、市场、客户、内容与团队回答中生成了 ${result.reasons.length} 条依据。`, `<div class="reason-list">${reasons}</div>`)}
@@ -466,23 +526,20 @@ function renderFullReport() {
     ${consultantCard()}
     <section class="download-panel no-print">
       <h2>把完整方案保存到手机或电脑</h2>
-      <p>点击后，在系统打印面板中选择“保存为 PDF”或“存储到文件”。顾问姓名、微信号和二维码会一同保存。</p>
-      <button class="button button-primary button-wide button-hero" data-print type="button">一键保存完整报告（PDF）</button>
+      <p>报告会直接生成 PDF。电脑点击后自动下载；手机点击后会打开系统保存窗口，顾问姓名和二维码会一同保存。</p>
+      <button class="button button-primary button-wide button-hero" data-download-pdf data-ready-label="一键保存完整报告（PDF）" type="button" disabled>正在准备 PDF…</button>
+      <p class="download-status" data-pdf-status role="status" aria-live="polite">正在生成可下载的 PDF，请稍候…</p>
+      <a class="pdf-fallback-link" data-pdf-fallback href="#" target="_blank" rel="noopener" hidden>下载没反应？点击这里打开 PDF</a>
     </section>
     <p class="result-disclaimer">本诊断根据企业当前填写的信息进行结构化判断，仅用于企业海外推广决策参考。实际结果会受到产品竞争力、市场变化、执行质量、预算与团队等因素影响；不对询盘数量、搜索排名、成交结果或投资回报作保证。</p>
   </div></div>`;
 
   bindCommonResultActions();
-  main.querySelectorAll('[data-print]').forEach((button) => button.addEventListener('click', () => window.print()));
-  main.querySelectorAll('[data-copy]').forEach((button) => button.addEventListener('click', async () => {
-    const value = button.dataset.copy;
-    try {
-      await navigator.clipboard.writeText(value);
-      showToast('已复制');
-    } catch {
-      showToast(`请长按复制：${value}`);
-    }
-  }));
+  const reportContainer = main.querySelector('.full-report-page .result-shell');
+  main.querySelectorAll('[data-download-pdf]').forEach((button) => {
+    button.addEventListener('click', () => handlePdfDownload(reportContainer));
+  });
+  window.requestAnimationFrame(() => { void startPdfPreparation(reportContainer); });
 }
 
 function renderRoute() {
@@ -498,7 +555,7 @@ function renderRoute() {
   else renderHome();
 }
 
-document.querySelector('#sales-version').textContent = `${sales.name}专属版`;
+document.querySelector('#sales-version').textContent = sales.accountName;
 document.querySelectorAll('[data-home]').forEach((link) => link.addEventListener('click', (event) => {
   event.preventDefault();
   setRoute('home');

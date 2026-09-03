@@ -1,29 +1,37 @@
 # 万成云商企业出海决策网站（静态版）
 
-这是用于 GitHub Pages 的纯静态版本。问答、规则判断和报告生成均在访问者浏览器中完成，不依赖后台接口，也不收集访问者电话号码。
+这是用于 GitHub Pages 的纯静态版本。问答、规则判断和报告生成均在访问者浏览器中完成，不依赖后台接口，也不收集访问者联系方式。
 
-## 两个销售版本
+完整报告会在浏览器中直接生成真正的 PDF 文件，不再调用“打印网页”：
 
-- `zhangsan/`：张三专属版
-- `lisi/`：李四专属版
+- 电脑端点击后直接下载 `.pdf` 文件；
+- 手机端优先打开系统保存/分享窗口；
+- 不支持系统窗口的浏览器会启动普通下载，并显示“打开 PDF”的备用入口。
 
-两个版本共用 `assets/` 内的问答与规则，只在各自目录的 `sales-config.js` 中保存顾问信息。
+PDF 组件已经保存在 `assets/vendor/`，运行时不依赖境外 CDN。
 
-## 后续填写联系方式
+## 三个账号版本
+
+- `wancheng/`：万成云商｜中国制造出海
+- `factory/`：工厂出海实战团
+- `cici/`：Cici的外贸日记
+
+三个版本共用 `assets/` 内的问答与规则，只在各自目录的 `sales-config.js` 中保存账号名称、顾问名称与二维码位置。
+
+## 后续填写二维码
 
 编辑对应目录的 `sales-config.js`：
 
 ```js
 window.WC_SALES = Object.freeze({
-  id: 'zhangsan',
-  name: '张三',
-  phone: '填写电话号码',
-  wechat: '填写微信号',
+  id: 'wancheng',
+  accountName: '万成云商｜中国制造出海',
+  consultantName: 'Cici｜企业出海顾问',
   qrImage: 'qr.png',
 });
 ```
 
-二维码图片放到同一销售目录，例如 `zhangsan/qr.png`。李四版本同理。
+二维码图片放到对应账号目录，例如 `wancheng/qr.png`。三个版本可以使用同一张或不同的二维码。
 
 ## 本地测试
 
@@ -32,4 +40,8 @@ npm test
 python3 -m http.server 8080
 ```
 
-打开 `http://127.0.0.1:8080/zhangsan/` 或 `http://127.0.0.1:8080/lisi/`。
+打开：
+
+- `http://127.0.0.1:8080/wancheng/`
+- `http://127.0.0.1:8080/factory/`
+- `http://127.0.0.1:8080/cici/`
