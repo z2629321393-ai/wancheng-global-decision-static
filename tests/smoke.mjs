@@ -28,6 +28,16 @@ assert.equal(/\/api\//.test(app), false, 'static app must not contain API routes
 assert.match(app, /查看并保存完整报告/);
 assert.match(app, /一键保存完整报告/);
 assert.doesNotMatch(app, /联系电话|微信号|专属版/);
+assert.match(app, /免费 · 1次顾问复核/);
+assert.match(app, /每家企业的产品、市场和获客基础都不一样/);
+assert.match(app, /进一步梳理更适合你的出海方向和获客重点/);
+assert.match(app, /独立站/);
+assert.match(app, /Google获客/);
+assert.match(app, /LinkedIn开发/);
+assert.match(app, /海外社媒/);
+assert.match(app, /添加 Cici/);
+assert.match(app, /备注「出海诊断」/);
+assert.doesNotMatch(app, /免费人工复核|领取对应行业的出海资料|定制出海方案建议/);
 assert.doesNotMatch(app, /window\.print\s*\(/, 'PDF button must not open the browser print dialog');
 assert.doesNotMatch(app, /data-print/, 'legacy print controls must be removed');
 assert.match(app, /data-download-pdf/, 'full report must expose a real PDF download control');

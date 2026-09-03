@@ -230,17 +230,23 @@ img { max-width: 100%; }
 .report-gate > p:not(.eyebrow), .download-panel p { max-width: 720px; margin: 14px auto 26px; color: #c2d0df; }
 .button-hero { min-height: 62px; font-size: 18px; }
 .report-cover-note { margin-bottom: 12px; color: var(--muted); font-size: 13px; text-align: right; }
-.consultant-card { margin-top: 20px; padding: clamp(28px, 5vw, 46px); border-radius: var(--radius-lg); display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 36px; align-items: center; color: white; background: var(--navy-950); box-shadow: var(--shadow-lg); }
+.consultant-card { margin-top: 20px; padding: clamp(28px, 5vw, 46px); border-radius: var(--radius-lg); display: grid; grid-template-columns: minmax(0, 1fr) 242px; gap: clamp(32px, 5vw, 58px); align-items: center; color: white; background: linear-gradient(135deg, var(--navy-950), #102c50); box-shadow: var(--shadow-lg); }
 .consultant-card .eyebrow { color: #8fb5ff; }
 .consultant-copy h2 { margin: 0; font-size: clamp(27px, 4vw, 38px); line-height: 1.3; }
-.consultant-copy > p:not(.eyebrow) { max-width: 690px; margin: 16px 0 0; color: #c2d0df; font-size: 17px; }
-.consultant-qr-wrap { text-align: center; }
-.consultant-qr, .qr-placeholder { width: 210px; aspect-ratio: 1; margin-inline: auto; border-radius: 14px; background: white; }
+.consultant-intro { max-width: 720px; margin-top: 18px; }
+.consultant-intro p { margin: 0; color: #cbd7e6; font-size: 17px; line-height: 1.85; }
+.consultant-intro p:first-child { margin-bottom: 4px; color: white; font-weight: 700; }
+.consultant-topics { margin: 24px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.consultant-topics span { padding: 7px 11px; border: 1px solid rgba(143,181,255,.22); border-radius: 999px; color: #c9dafa; background: rgba(102,151,232,.08); font-size: 13px; font-weight: 700; }
+.consultant-qr-wrap { padding: 18px 16px 16px; border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(255,255,255,.055); text-align: center; }
+.consultant-qr-wrap h3 { margin: 0 0 14px; color: white; font-size: 18px; }
+.consultant-qr, .qr-placeholder { width: min(210px, 100%); aspect-ratio: 1; margin-inline: auto; border-radius: 14px; background: white; }
 .consultant-qr { display: block; object-fit: contain; padding: 8px; }
-.qr-placeholder { border: 2px dashed #aebed1; display: grid; place-content: center; color: #536d8b; }
+.qr-placeholder { border: 2px dashed #b8c6d8; display: grid; place-content: center; padding: 18px; color: #536d8b; }
 .qr-placeholder span { display: block; font-weight: 800; }
-.qr-placeholder small { margin-top: 3px; }
-.consultant-qr-wrap p { margin: 10px 0 0; color: #aebed1; font-size: 12px; }
+.qr-placeholder small { margin-top: 5px; color: #8092a8; font-size: 12px; line-height: 1.5; }
+.consultant-qr-wrap > p { margin: 12px 0 2px; color: white; font-size: 14px; font-weight: 700; }
+.consultant-qr-wrap > small { display: block; color: #aebed1; font-size: 12px; line-height: 1.55; }
 .download-panel { background: var(--navy-900); }
 .download-panel .download-status { margin: 14px auto 0; color: #aebed1; font-size: 13px; }
 .download-panel .download-status.error { color: #ffd5d2; }
@@ -312,7 +318,7 @@ img { max-width: 100%; }
   .channel-body { grid-template-columns: 1fr; }
   .timeline-grid { grid-template-columns: 1fr; }
   .consultant-card { grid-template-columns: 1fr; }
-  .consultant-qr-wrap { order: -1; }
+  .consultant-qr-wrap { width: min(100%, 242px); justify-self: center; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: auto; }
   .footer-inner { flex-direction: column; }
@@ -344,5 +350,7 @@ img { max-width: 100%; }
   .result-section, .result-hero, .consultant-card { box-shadow: none; break-inside: avoid; }
   .consultant-card { color: #142033; border: 2px solid #0b1f3a; background: white; }
   .consultant-card .eyebrow, .consultant-card h2 { color: #0b1f3a; }
-  .consultant-copy > p:not(.eyebrow), .consultant-qr-wrap p { color: #526078; }
+  .consultant-intro p, .consultant-qr-wrap > p, .consultant-qr-wrap > small { color: #526078; }
+  .consultant-intro p:first-child { color: #142033; }
+  .consultant-topics span { color: #315079; border-color: #ccd8e8; background: #f5f8fc; }
 }

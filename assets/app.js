@@ -405,14 +405,24 @@ function renderShortResult() {
 function consultantCard() {
   const qr = sales.qrImage
     ? `<img class="consultant-qr" src="${escapeAttribute(sales.qrImage)}" alt="${escapeAttribute(sales.consultantName)}的二维码">`
-    : `<div class="qr-placeholder" aria-label="顾问二维码待补充"><span>顾问二维码</span><small>稍后补充</small></div>`;
+    : `<div class="qr-placeholder" aria-label="顾问二维码待补充"><span>二维码待补充</span><small>此处将展示 Cici 的二维码</small></div>`;
+  const qrPrompt = sales.qrImage ? '扫码添加顾问' : '二维码补充后即可扫码添加顾问';
   return `<section class="consultant-card" id="consultant">
     <div class="consultant-copy">
-      <p class="eyebrow">免费人工复核</p>
+      <p class="eyebrow">免费 · 1次顾问复核</p>
       <h2>${escapeHtml(sales.consultantName)}</h2>
-      <p>添加顾问，可免费获得一次企业出海人工分析、定制出海方案建议，并领取对应行业的出海资料。</p>
+      <div class="consultant-intro">
+        <p>每家企业的产品、市场和获客基础都不一样。</p>
+        <p>如果你对诊断结果还有疑问，可以让 Cici 帮你结合实际情况再看一遍，进一步梳理更适合你的出海方向和获客重点。</p>
+      </div>
+      <p class="consultant-topics" aria-label="可沟通方向"><span>独立站</span><span>Google获客</span><span>LinkedIn开发</span><span>海外社媒</span></p>
     </div>
-    <div class="consultant-qr-wrap">${qr}<p>${sales.qrImage ? '长按识别或扫码添加顾问' : '二维码补充后可长按识别或扫码添加顾问'}</p></div>
+    <div class="consultant-qr-wrap">
+      <h3>添加 Cici</h3>
+      ${qr}
+      <p>${qrPrompt}</p>
+      <small>备注「出海诊断」，方便快速了解你的情况</small>
+    </div>
   </section>`;
 }
 
