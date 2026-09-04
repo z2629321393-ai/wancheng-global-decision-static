@@ -13,13 +13,18 @@ const ruleEngine = readFileSync(resolve(root, 'assets/rule-engine.js'), 'utf8');
 const pdfExport = readFileSync(resolve(root, 'assets/pdf-export.js'), 'utf8');
 const html2canvas = readFileSync(resolve(root, 'assets/vendor/html2canvas.min.js'), 'utf8');
 const pdfLib = readFileSync(resolve(root, 'assets/vendor/pdf-lib.min.js'), 'utf8');
+const ciciServiceLink = 'https://work.weixin.qq.com/ca/cawcde6c7b8beeca06';
 const accountVersions = [
-  ['wancheng', '万成云商｜中国制造出海'],
-  ['factory', '工厂出海实战团'],
-  ['cici', 'Cici的外贸日记'],
-].map(([directory, accountName]) => ({
+  ['wancheng', '万成云商｜中国制造出海', 'Cici｜企业出海顾问', '../assets/qr-3.png', 'https://work.weixin.qq.com/ca/cawcdeaf2900451dbe', ciciServiceLink],
+  ['factory', '工厂出海实战团', 'Cici｜企业出海顾问', '../assets/qr-2.png', 'https://work.weixin.qq.com/ca/cawcde676802711a9b', ciciServiceLink],
+  ['cici', 'Cici的外贸日记', 'Cici｜企业出海顾问', '../assets/qr-1.png', 'https://work.weixin.qq.com/ca/cawcde6c7b8beeca06', ciciServiceLink],
+].map(([directory, accountName, consultantName, qrImage, wechatLink, serviceWechatLink]) => ({
   directory,
   accountName,
+  consultantName,
+  qrImage,
+  wechatLink,
+  serviceWechatLink,
   page: readFileSync(resolve(root, directory, 'index.html'), 'utf8'),
   config: readFileSync(resolve(root, directory, 'sales-config.js'), 'utf8'),
 }));
@@ -42,8 +47,13 @@ assert.match(app, /Google运营/);
 assert.match(app, /Facebook运营/);
 assert.match(app, /LinkedIn运营/);
 assert.match(app, /专业团队持续代运营/);
-assert.match(app, /添加 Cici/);
+assert.match(app, /const consultantLabel = 'Cici'/);
+assert.match(app, /添加 \$\{escapeHtml\(consultantLabel\)\}/);
 assert.match(app, /备注「出海诊断」/);
+assert.match(app, /点击添加企业微信/);
+assert.match(app, /咨询 Cici/);
+assert.match(app, /有出海疑问/);
+assert.match(app, /work\.weixin\.qq\.com/);
 assert.doesNotMatch(app, /免费人工复核|领取对应行业的出海资料|定制出海方案建议/);
 assert.doesNotMatch(`${app}\n${ruleEngine}`, /主动开发/);
 assert.match(ruleEngine, /独立站 \+ Google搜索代运营/);
@@ -60,9 +70,13 @@ assert.ok(pdfLib.length > 400_000, 'local pdf-lib vendor file is incomplete');
 for (const version of accountVersions) {
   assert.match(version.page, /sales-config\.js/);
   assert.ok(version.config.includes(`accountName: '${version.accountName}'`));
-  assert.match(version.config, /consultantName: 'Cici｜企业出海顾问'/);
-  assert.match(version.config, /qrImage: ''/);
-  assert.doesNotMatch(version.config, /phone|wechat/);
+  assert.ok(version.config.includes(`consultantName: '${version.consultantName}'`));
+  assert.ok(version.config.includes(`qrImage: '${version.qrImage}'`));
+  assert.ok(version.config.includes(`wechatLink: '${version.wechatLink}'`));
+  assert.ok(version.config.includes(`serviceWechatLink: '${version.serviceWechatLink}'`));
+  assert.doesNotMatch(version.config, /phone:/);
+  const qrAsset = readFileSync(resolve(root, version.qrImage.replace('../', '')));
+  assert.ok(qrAsset.length > 500_000, `QR asset is incomplete for ${version.directory}`);
 }
 
 const sample = normalizeAnswers({

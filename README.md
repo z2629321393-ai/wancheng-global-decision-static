@@ -14,13 +14,13 @@ PDF 组件已经保存在 `assets/vendor/`，运行时不依赖境外 CDN。
 
 ## 三个账号版本
 
-- `wancheng/`：万成云商｜中国制造出海
-- `factory/`：工厂出海实战团
-- `cici/`：Cici的外贸日记
+- `wancheng/`：万成云商｜中国制造出海（二维码 3）
+- `factory/`：工厂出海实战团（二维码 2）
+- `cici/`：Cici的外贸日记（二维码 1）
 
-三个版本共用 `assets/` 内的问答与规则，只在各自目录的 `sales-config.js` 中保存账号名称、顾问名称与二维码位置。
+三个版本共用 `assets/` 内的问答与规则。访客看到的接待顾问统一为“Cici｜企业出海顾问”；三张二维码保持各自版本的对应关系。页面中的通用咨询入口统一使用 Cici 的企业微信链接。
 
-## 后续填写二维码
+## 后续修改二维码或企业微信链接
 
 编辑对应目录的 `sales-config.js`：
 
@@ -29,11 +29,13 @@ window.WC_SALES = Object.freeze({
   id: 'wancheng',
   accountName: '万成云商｜中国制造出海',
   consultantName: 'Cici｜企业出海顾问',
-  qrImage: 'qr.png',
+  qrImage: '../assets/qr-3.png',
+  wechatLink: 'https://work.weixin.qq.com/ca/与二维码对应的链接',
+  serviceWechatLink: 'https://work.weixin.qq.com/ca/Cici的通用咨询链接',
 });
 ```
 
-二维码图片放到对应账号目录，例如 `wancheng/qr.png`。三个版本可以使用同一张或不同的二维码。
+二维码图片统一保存在 `assets/`。`wechatLink` 与当前二维码对应；`serviceWechatLink` 用于页面其他位置的“咨询 Cici”入口。
 
 ## 本地测试
 

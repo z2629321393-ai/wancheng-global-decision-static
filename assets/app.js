@@ -4,11 +4,24 @@ import { diagnose } from './rule-engine.js';
 import { createPdfObjectUrl, prepareReportPdf, releasePdfObjectUrl, savePreparedPdf } from './pdf-export.js';
 
 const main = document.querySelector('#main');
+
+function safeContactLink(value) {
+  try {
+    const url = new URL(String(value || '').trim());
+    if (url.protocol === 'https:' && url.hostname === 'work.weixin.qq.com' && url.pathname.startsWith('/ca/')) return url.href;
+  } catch {
+    // Empty or malformed contact links stay unavailable until the account config is corrected.
+  }
+  return '';
+}
+
 const sales = Object.freeze({
   id: String(window.WC_SALES?.id || 'default'),
   accountName: String(window.WC_SALES?.accountName || '万成云商｜中国制造出海'),
   consultantName: String(window.WC_SALES?.consultantName || 'Cici｜企业出海顾问'),
   qrImage: String(window.WC_SALES?.qrImage || '').trim(),
+  wechatLink: safeContactLink(window.WC_SALES?.wechatLink),
+  serviceWechatLink: safeContactLink(window.WC_SALES?.serviceWechatLink),
 });
 
 const storagePrefix = `wc_static_${sales.id}`;
@@ -51,6 +64,23 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll('`', '&#096;');
+}
+
+function serviceContactLink(label, className = 'text-link') {
+  if (!sales.serviceWechatLink) return '';
+  return `<a class="${escapeAttribute(className)}" href="${escapeAttribute(sales.serviceWechatLink)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)} <span aria-hidden="true">↗</span></a>`;
+}
+
+function mountPersistentContact() {
+  if (!sales.serviceWechatLink || document.querySelector('.floating-contact')) return;
+  const link = document.createElement('a');
+  link.className = 'floating-contact no-print';
+  link.href = sales.serviceWechatLink;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.setAttribute('aria-label', '出海咨询，联系 Cici');
+  link.innerHTML = '<span class="floating-contact-dot" aria-hidden="true"></span><span>咨询 Cici</span>';
+  document.body.append(link);
 }
 
 function safeParse(value, fallback = {}) {
@@ -111,6 +141,7 @@ function renderHome() {
           <div class="hero-actions">
             <button class="button button-primary" data-go="diagnosis" type="button">开始免费诊断 <span aria-hidden="true">→</span></button>
             <a class="button button-secondary" href="#how-it-works">先看判断逻辑</a>
+            ${serviceContactLink('有出海疑问？联系 Cici', 'button button-secondary')}
           </div>
           <div class="trust-line" aria-label="诊断说明">
             <span>结果直接免费展示</span><span>无需提交联系方式</span><span>给出具体判断依据</span>
@@ -164,7 +195,10 @@ function renderHome() {
       <div class="shell">
         <h2>先花3分钟，把出海顺序排清楚。</h2>
         <p>诊断结果在浏览器中直接生成，不收集个人联系方式。</p>
-        <button class="button button-primary" data-go="diagnosis" type="button">开始免费诊断 <span aria-hidden="true">→</span></button>
+        <div class="closing-actions">
+          <button class="button button-primary" data-go="diagnosis" type="button">开始免费诊断 <span aria-hidden="true">→</span></button>
+          ${serviceContactLink('出海有疑问，联系 Cici', 'button button-secondary')}
+        </div>
       </div>
     </section>`;
 
@@ -403,6 +437,7 @@ function renderShortResult() {
       <h2>继续查看网站结构、渠道顺序与90天计划</h2>
       <p>完整报告无需填写任何联系方式；打开后会同时显示顾问姓名和二维码。</p>
       <button id="open-full-report" class="button button-primary button-wide button-hero" type="button">查看并保存完整报告 →</button>
+      ${serviceContactLink('对诊断结果有疑问？联系 Cici', 'result-contact-link')}
     </section>
     <p class="result-disclaimer">本诊断仅用于企业海外推广决策参考，不对询盘数量、搜索排名、成交结果或投资回报作保证。</p>
   </div></div>`;
@@ -411,25 +446,30 @@ function renderShortResult() {
 }
 
 function consultantCard() {
+  const consultantLabel = 'Cici';
   const qr = sales.qrImage
     ? `<img class="consultant-qr" src="${escapeAttribute(sales.qrImage)}" alt="${escapeAttribute(sales.consultantName)}的二维码">`
-    : `<div class="qr-placeholder" aria-label="顾问二维码待补充"><span>二维码待补充</span><small>此处将展示 Cici 的二维码</small></div>`;
-  const qrPrompt = sales.qrImage ? '扫码添加顾问' : '二维码补充后即可扫码添加顾问';
+    : `<div class="qr-placeholder" aria-label="顾问二维码待补充"><span>二维码待补充</span><small>此处将展示顾问二维码</small></div>`;
+  const qrPrompt = sales.qrImage ? `微信扫码添加${escapeHtml(consultantLabel)}` : '二维码补充后即可扫码添加顾问';
+  const directLink = sales.wechatLink
+    ? `<a class="wechat-direct-button no-print" href="${escapeAttribute(sales.wechatLink)}" target="_blank" rel="noopener noreferrer">点击添加企业微信 <span aria-hidden="true">↗</span></a>`
+    : '<span class="wechat-direct-button disabled no-print" aria-disabled="true">企业微信直达链接待补充</span>';
   return `<section class="consultant-card" id="consultant">
     <div class="consultant-copy">
       <p class="eyebrow">免费 · 1次顾问复核</p>
       <h2>${escapeHtml(sales.consultantName)}</h2>
       <div class="consultant-intro">
         <p>每家企业的产品、市场和获客基础都不一样。</p>
-        <p>如果你对诊断结果还有疑问，可以让 Cici 帮你结合实际情况再看一遍，进一步梳理更适合你的出海方向和获客重点。</p>
+        <p>如果你对诊断结果还有疑问，可以让 ${escapeHtml(consultantLabel)} 帮你结合实际情况再看一遍，进一步梳理更适合你的出海方向和获客重点。</p>
         <p>如果企业内部缺少海外运营团队，也可以进一步判断哪些环节适合交给专业团队持续代运营。</p>
       </div>
       <p class="consultant-topics" aria-label="可沟通方向"><span>独立站</span><span>Google运营</span><span>Facebook运营</span><span>LinkedIn运营</span></p>
     </div>
     <div class="consultant-qr-wrap">
-      <h3>添加 Cici</h3>
+      <h3>添加 ${escapeHtml(consultantLabel)}</h3>
       ${qr}
       <p>${qrPrompt}</p>
+      ${directLink}
       <small>备注「出海诊断」，方便快速了解你的情况</small>
     </div>
   </section>`;
@@ -585,3 +625,4 @@ document.querySelectorAll('[data-start]').forEach((button) => button.addEventLis
 }));
 window.addEventListener('hashchange', renderRoute);
 renderRoute();
+mountPersistentContact();
