@@ -9,6 +9,7 @@ import { INDUSTRIES } from '../assets/industry-taxonomy.js';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
 const app = readFileSync(resolve(root, 'assets/app.js'), 'utf8');
+const ruleEngine = readFileSync(resolve(root, 'assets/rule-engine.js'), 'utf8');
 const pdfExport = readFileSync(resolve(root, 'assets/pdf-export.js'), 'utf8');
 const html2canvas = readFileSync(resolve(root, 'assets/vendor/html2canvas.min.js'), 'utf8');
 const pdfLib = readFileSync(resolve(root, 'assets/vendor/pdf-lib.min.js'), 'utf8');
@@ -28,16 +29,25 @@ assert.equal(/\/api\//.test(app), false, 'static app must not contain API routes
 assert.match(app, /查看并保存完整报告/);
 assert.match(app, /一键保存完整报告/);
 assert.doesNotMatch(app, /联系电话|微信号|专属版/);
+assert.match(app, /你想要出海的产品\/服务属于哪个行业/);
+assert.match(app, /你的产品\/服务特征有哪些/);
+assert.match(app, /你现在主要利用哪些渠道获客/);
+assert.match(app, /你的团队配置/);
+assert.doesNotMatch(app, /key: 'assets'/, 'content-assets question should be removed');
 assert.match(app, /免费 · 1次顾问复核/);
 assert.match(app, /每家企业的产品、市场和获客基础都不一样/);
 assert.match(app, /进一步梳理更适合你的出海方向和获客重点/);
 assert.match(app, /独立站/);
-assert.match(app, /Google获客/);
-assert.match(app, /LinkedIn开发/);
-assert.match(app, /海外社媒/);
+assert.match(app, /Google运营/);
+assert.match(app, /Facebook运营/);
+assert.match(app, /LinkedIn运营/);
+assert.match(app, /专业团队持续代运营/);
 assert.match(app, /添加 Cici/);
 assert.match(app, /备注「出海诊断」/);
 assert.doesNotMatch(app, /免费人工复核|领取对应行业的出海资料|定制出海方案建议/);
+assert.doesNotMatch(`${app}\n${ruleEngine}`, /主动开发/);
+assert.match(ruleEngine, /独立站 \+ Google搜索代运营/);
+assert.match(ruleEngine, /Facebook \/ LinkedIn内容运营/);
 assert.doesNotMatch(app, /window\.print\s*\(/, 'PDF button must not open the browser print dialog');
 assert.doesNotMatch(app, /data-print/, 'legacy print controls must be removed');
 assert.match(app, /data-download-pdf/, 'full report must expose a real PDF download control');
@@ -58,7 +68,7 @@ for (const version of accountVersions) {
 const sample = normalizeAnswers({
   industryMain: 'machinery',
   industrySub: 'machinery-cnc',
-  productType: 'machinery',
+  productTypes: ['standard-industrial', 'custom'],
   productName: '五轴 CNC 加工中心',
   businessModel: 'b2b',
   targetMarkets: ['europe'],
@@ -67,7 +77,6 @@ const sample = normalizeAnswers({
   orderValue: 'over-500k',
   decisionCycle: '3-6m',
   certificationStatus: 'partial',
-  contentAssets: ['product-images', 'datasheet', 'english-product', 'factory-photos'],
   currentChannels: ['b2b-platform'],
   currentProblem: 'new-market',
   teamStatus: 'small',
@@ -76,16 +85,28 @@ const sample = normalizeAnswers({
 });
 const validation = validateAnswers(sample);
 assert.equal(validation.valid, true, JSON.stringify(validation.errors));
+assert.deepEqual(sample.productTypes, ['standard-industrial', 'custom']);
 const result = diagnose(sample);
 assert.ok(result.conclusion.length > 10);
 assert.equal(result.channels.length, 3);
+assert.ok(result.serviceMode.title.includes('代运营'));
+assert.ok(result.serviceMode.scope.length >= 4);
+assert.ok(['search', 'social'].includes(result.channels[0].key));
+assert.equal(result.channels[2].key, 'outbound');
+assert.ok(result.channels.every((item) => !item.channel.includes('主动开发')));
 assert.ok(result.website.modules.length >= 8);
 assert.ok(result.plan90Days.day1to30.length >= 3);
 
 for (const industry of INDUSTRIES) {
+  if (industry.id !== 'other-manufacturing') {
+    assert.equal(industry.children.at(-1)?.name, '其他', `missing sub-industry other option for ${industry.id}`);
+  }
   const industrySample = { ...sample, industryMain: industry.id, industrySub: industry.children[0]?.id || '' };
   const industryResult = diagnose(industrySample);
   assert.ok(industryResult.meta.industryName, `missing result for ${industry.id}`);
   assert.equal(industryResult.channels.length, 3);
 }
+
+const legacy = normalizeAnswers({ ...sample, productTypes: undefined, productType: 'machinery' });
+assert.deepEqual(legacy.productTypes, ['standard-industrial']);
 console.log('Static website smoke tests passed.');

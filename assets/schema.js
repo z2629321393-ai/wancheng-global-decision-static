@@ -4,11 +4,8 @@ const option = (value, label) => ({ value, label });
 
 export const QUESTION_OPTIONS = Object.freeze({
   productTypes: [
-    option('standard-industrial', '标准工业品'), option('machinery', '机械 / 设备'),
-    option('components', '零部件'), option('raw-material', '原材料'),
-    option('oem-odm', 'OEM / ODM'), option('custom', '高度定制产品'),
-    option('project', '工程 / 项目型产品'), option('branded-consumer', '品牌消费品'),
-    option('consumer', '普通消费品'), option('other', '其他'),
+    option('standard-industrial', '标品'), option('custom', '非标定制'),
+    option('oem-odm', 'OEM / ODM'), option('other', '其他'),
   ],
   businessModels: [
     option('b2b', 'B2B 企业客户'), option('b2c', 'B2C 消费者'),
@@ -103,6 +100,19 @@ function values(key) {
 
 const ALLOWED = Object.fromEntries(Object.keys(QUESTION_OPTIONS).map((key) => [key, values(key)]));
 
+const LEGACY_PRODUCT_TYPE_MAP = Object.freeze({
+  'standard-industrial': 'standard-industrial',
+  machinery: 'standard-industrial',
+  components: 'standard-industrial',
+  'raw-material': 'standard-industrial',
+  'branded-consumer': 'standard-industrial',
+  consumer: 'standard-industrial',
+  custom: 'custom',
+  project: 'custom',
+  'oem-odm': 'oem-odm',
+  other: 'other',
+});
+
 export function labelFor(group, value) {
   return QUESTION_OPTIONS[group]?.find((item) => item.value === value)?.label || value || '';
 }
@@ -127,6 +137,12 @@ export function normalizeSource(value) {
 export function normalizeAnswers(input = {}) {
   const main = INDUSTRIES.find((item) => item.id === input.industryMain);
   const sub = main?.children?.find((item) => item.id === input.industrySub);
+  const rawProductTypes = Array.isArray(input.productTypes)
+    ? input.productTypes
+    : input.productType
+      ? [LEGACY_PRODUCT_TYPE_MAP[input.productType] || input.productType]
+      : [];
+  const productTypes = cleanArray(rawProductTypes, ALLOWED.productTypes, 4);
   let contentAssets = cleanArray(input.contentAssets, ALLOWED.contentAssets);
   let currentChannels = cleanArray(input.currentChannels, ALLOWED.currentChannels);
   if (contentAssets.includes('none')) contentAssets = ['none'];
@@ -136,7 +152,7 @@ export function normalizeAnswers(input = {}) {
     industryMain: main?.id || '',
     industrySub: sub?.id || '',
     industryCustom: cleanText(input.industryCustom, 80),
-    productType: ALLOWED.productTypes.has(input.productType) ? input.productType : '',
+    productTypes,
     productName: cleanText(input.productName, 120),
     businessModel: ALLOWED.businessModels.has(input.businessModel) ? input.businessModel : '',
     targetMarkets: cleanArray(input.targetMarkets, ALLOWED.targetMarkets),
@@ -159,17 +175,16 @@ export function validateAnswers(input) {
   const answers = normalizeAnswers(input);
   const errors = {};
   if (!answers.industryMain) errors.industryMain = '请选择所属行业';
-  if (answers.industryMain === 'other-manufacturing' && !answers.industryCustom) {
+  if ((answers.industryMain === 'other-manufacturing' || answers.industrySub.endsWith('-other')) && !answers.industryCustom) {
     errors.industryCustom = '请填写您的细分行业';
   }
-  if (!answers.productType) errors.productType = '请选择产品类型';
+  if (!answers.productTypes.length) errors.productTypes = '请至少选择一项产品/服务特征';
   if (!answers.businessModel) errors.businessModel = '请选择商业模式';
   if (!answers.targetMarkets.length) errors.targetMarkets = '请至少选择一个目标市场状态';
   if (!answers.customerTypes.length) errors.customerTypes = '请至少选择一种目标客户';
   if (!answers.orderValue) errors.orderValue = '请选择典型订单金额';
   if (!answers.decisionCycle) errors.decisionCycle = '请选择采购决策周期';
   if (!answers.certificationStatus) errors.certificationStatus = '请选择认证与出口条件状态';
-  if (!answers.contentAssets.length) errors.contentAssets = '请至少选择一项资料准备情况';
   if (!answers.currentChannels.length) errors.currentChannels = '请至少选择一项当前推广情况';
   if (!answers.currentProblem) errors.currentProblem = '请选择当前最大问题';
   if (!answers.teamStatus) errors.teamStatus = '请选择团队承接情况';

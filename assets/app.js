@@ -19,18 +19,17 @@ const storageKeys = {
 };
 
 const questions = [
-  { key: 'industry', stage: 0, title: '你的企业属于哪个行业？', description: '先确定行业与细分方向，系统会结合行业特征调整判断。' },
-  { key: 'product', stage: 0, title: '你准备重点推广什么产品？', description: '海外推广最怕产品过多、重点不清。主推产品名称可以先写一个。' },
+  { key: 'industry', stage: 0, title: '你想要出海的产品/服务属于哪个行业？', description: '先确定行业与细分方向，系统会结合行业特征调整判断。' },
+  { key: 'product', stage: 0, title: '你的产品/服务特征有哪些？', description: '可以多选。产品特征会影响网站形态、内容重点与推广渠道。' },
   { key: 'business', stage: 0, title: '你的主要商业模式是什么？', description: 'B2B 与 B2C 的网站、渠道和客户决策方式差别很大。' },
   { key: 'markets', stage: 1, title: '你优先考虑哪些海外市场？', description: '可以多选；如果尚未确定，也请如实选择。' },
   { key: 'customers', stage: 1, title: '你希望找到哪类海外客户？', description: '可以多选。越能说清目标客户，后续渠道判断越准确。' },
   { key: 'order', stage: 1, title: '典型单笔订单或客单价大约是多少？', description: 'B2B 请按典型订单或项目金额，B2C 请按典型客单价。' },
-  { key: 'cycle', stage: 1, title: '客户通常需要多久作出采购决定？', description: '采购周期会影响网站内容、主动开发和信任培育的优先级。' },
+  { key: 'cycle', stage: 1, title: '客户通常需要多久作出采购决定？', description: '采购周期会影响网站内容、搜索推广和海外社媒信任培育的优先级。' },
   { key: 'certification', stage: 2, title: '认证与出口条件准备到哪一步？', description: '这里只判断准备度，不替代目标市场的专业合规核验。' },
-  { key: 'assets', stage: 2, title: '你目前已经有哪些企业与产品资料？', description: '可以多选。请按目前真正可用于海外推广的资料填写。' },
-  { key: 'channels', stage: 3, title: '你现在正在使用哪些海外推广方式？', description: '可以多选；如果还没有开始，选择“还没有开始”。' },
+  { key: 'channels', stage: 3, title: '你现在主要利用哪些渠道获客？', description: '可以多选；请按实际情况填写，系统会判断渠道是否缺少主次和承接。' },
   { key: 'problem', stage: 3, title: '你当前最想解决的问题是什么？', description: '系统会据此判断问题更偏流量、转化、成交还是客户沉淀。' },
-  { key: 'team', stage: 3, title: '你的团队能否承接海外客户？', description: '引流前先确认由谁接收、回复和持续跟进客户。' },
+  { key: 'team', stage: 3, title: '你的团队配置', description: '了解内部承接与配合条件，判断更适合单渠道代运营还是组合代运营。' },
   { key: 'timeline', stage: 4, title: '你计划什么时候开始？', description: '最后一步。结果将在当前设备直接生成，无需提交联系方式。' },
 ];
 
@@ -90,6 +89,16 @@ function clearPreparedPdf() {
   pdfPreparation = null;
 }
 
+function previewIcon(name) {
+  const paths = {
+    fit: '<circle cx="12" cy="12" r="8.5"></circle><path d="m8.5 12 2.3 2.3 4.8-5"></path>',
+    site: '<rect x="3.5" y="5" width="17" height="14" rx="2"></rect><path d="M3.5 9h17M7 7h.01M10 7h.01"></path>',
+    channel: '<path d="M5 6h5M14 6h5M8 6v12h4M16 6v7h-4M12 13v5h7"></path><circle cx="5" cy="6" r="1.5"></circle><circle cx="19" cy="6" r="1.5"></circle><circle cx="19" cy="18" r="1.5"></circle>',
+    timeline: '<rect x="4" y="5.5" width="16" height="15" rx="2"></rect><path d="M8 3.5v4M16 3.5v4M4 10h16M8 14h3M8 17h6"></path>',
+  };
+  return `<svg class="preview-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
+}
+
 function renderHome() {
   document.title = `${sales.accountName}｜企业出海决策系统`;
   main.innerHTML = `
@@ -98,7 +107,7 @@ function renderHome() {
         <div class="hero-copy">
           <p class="eyebrow">WANCHENG GLOBAL DECISION</p>
           <h1>你的企业，到底适不适合做<span>海外推广？</span></h1>
-          <p class="hero-subtitle">3分钟判断独立站、Google、主动开发和海外社媒应该怎么排顺序。</p>
+          <p class="hero-subtitle">网站做了没询盘、Google广告投了看不懂、Facebook发了也没客户？如果你已经试过不少办法，却仍不知道预算该放在哪里，3分钟先判断问题卡在哪里，再看该优先做独立站、Google还是海外社媒。</p>
           <div class="hero-actions">
             <button class="button button-primary" data-go="diagnosis" type="button">开始免费诊断 <span aria-hidden="true">→</span></button>
             <a class="button button-secondary" href="#how-it-works">先看判断逻辑</a>
@@ -110,10 +119,10 @@ function renderHome() {
         <aside class="decision-panel" aria-label="诊断输出预览">
           <p class="panel-kicker">不是简单打分，而是回答四个决策问题</p>
           <div class="decision-list">
-            <div class="decision-row"><span class="decision-number">01</span><div><strong>现在是否适合启动海外推广</strong><small>结合产品、市场、客户与承接能力</small></div></div>
+            <div class="decision-row"><span class="decision-number">01</span><div><strong>问题卡在流量、信任还是转化</strong><small>先找真实卡点，避免继续盲目铺渠道</small></div></div>
             <div class="decision-row"><span class="decision-number">02</span><div><strong>独立站应该优先、延后还是轻量验证</strong><small>不默认所有工厂都必须先建站</small></div></div>
-            <div class="decision-row"><span class="decision-number">03</span><div><strong>搜索、主动开发、社媒怎么排顺序</strong><small>每条路径都说明原因与首个动作</small></div></div>
-            <div class="decision-row"><span class="decision-number">04</span><div><strong>未来90天应该先做哪些动作</strong><small>按基础、验证、优化三个阶段执行</small></div></div>
+            <div class="decision-row"><span class="decision-number">03</span><div><strong>Google、Facebook、LinkedIn怎么排顺序</strong><small>判断更适合搜索、社媒还是组合运营</small></div></div>
+            <div class="decision-row"><span class="decision-number">04</span><div><strong>更适合哪一种代运营组合</strong><small>明确首阶段重点与90天推进节奏</small></div></div>
           </div>
           <p class="panel-note">相同输入会得到相同结果；全部运算在当前设备完成，不会上传你填写的诊断内容。</p>
         </aside>
@@ -125,11 +134,11 @@ function renderHome() {
         <div class="principle-copy">
           <p class="eyebrow">先定位，再选工具</p>
           <h2 class="section-title">不是所有工厂，<br>都应该先建网站。</h2>
-          <p>独立站是承接工具，不是“做了就有客户”。只有先确定产品、市场和客户，才能继续判断 SEO、Google 广告、LinkedIn、主动开发和海外社媒应该怎么组合。</p>
+          <p>独立站是承接工具，不是“做了就有客户”。只有先确定产品、市场和客户，才能继续判断独立站、Google、Facebook、LinkedIn与海外社媒应该怎么组合运营。</p>
         </div>
         <div class="question-stack">
           <article class="question-card"><span class="number">01</span><h3>你的产品卖什么？</h3><p>先选 1—3 个真正有竞争力、能被客户理解和比较的主推产品。</p></article>
-          <article class="question-card"><span class="number">02</span><h3>你先做哪个市场？</h3><p>不同国家的需求、竞争、认证、语言和采购方式不同，第一阶段不必同时做全球。</p></article>
+          <article class="question-card"><span class="number">02</span><h3>你的目标市场是哪里？</h3><p>不同国家的需求、竞争、认证、语言和采购方式不同，第一阶段不必同时做全球。</p></article>
           <article class="question-card"><span class="number">03</span><h3>你的客户到底是谁？</h3><p>经销商、品牌商、海外工厂、工程公司和消费者的决策链完全不同。</p></article>
         </div>
       </div>
@@ -143,10 +152,10 @@ function renderHome() {
           <p class="section-lead">先看到简版方向，再自行打开并保存完整报告；不会弹出信息收集表单。</p>
         </div>
         <div class="result-preview-grid">
-          <article class="preview-card"><span class="preview-icon">✓</span><h3>海外推广判断</h3><p>适合启动、小步验证，或先补基础条件，并说明具体原因。</p></article>
-          <article class="preview-card"><span class="preview-icon">站</span><h3>独立站判断</h3><p>优先建设、先定位、轻量 Landing Page，或暂缓完整投入。</p></article>
-          <article class="preview-card"><span class="preview-icon">序</span><h3>渠道优先级</h3><p>搜索获客、主动开发与社媒信任培育的先后顺序和首个动作。</p></article>
-          <article class="preview-card"><span class="preview-icon">90</span><h3>90天路线</h3><p>前30天搭基础、31—60天做验证、61—90天按数据优化。</p></article>
+          <article class="preview-card"><span class="preview-icon">${previewIcon('fit')}</span><h3>海外推广判断</h3><p>适合启动、小步验证，或先补基础条件，并说明具体原因。</p></article>
+          <article class="preview-card"><span class="preview-icon">${previewIcon('site')}</span><h3>独立站判断</h3><p>优先建设、先定位、轻量 Landing Page，或暂缓完整投入。</p></article>
+          <article class="preview-card"><span class="preview-icon">${previewIcon('channel')}</span><h3>渠道优先级</h3><p>独立站与Google、Facebook、LinkedIn及海外社媒的投入顺序。</p></article>
+          <article class="preview-card"><span class="preview-icon">${previewIcon('timeline')}</span><h3>90天代运营路线</h3><p>前30天搭基础、31—60天做验证、61—90天按数据优化。</p></article>
         </div>
       </div>
     </section>
@@ -193,16 +202,15 @@ function questionBody(key) {
     const subOptions = (selectedIndustry?.children || []).map((item) => ({ value: item.id, label: item.name }));
     return `<div class="field-row">${selectField('industryMain', '一级行业', mainOptions)}${selectField('industrySub', '细分行业', subOptions, false)}</div>
       ${inputField('industryCustom', '找不到你的行业？可以填写', '例如：特种陶瓷加工、船舶配件')}
-      <p class="help-text">选择“其他制造业”时，请填写具体细分行业。</p>`;
+      <p class="help-text">选择一级行业或细分行业中的“其他”时，请填写具体行业。</p>`;
   }
-  if (key === 'product') return `${optionCards('productType', 'productTypes')}${inputField('productName', '主推产品名称（建议填写）', '例如：五轴 CNC 加工中心')}`;
+  if (key === 'product') return `${optionCards('productTypes', 'productTypes', { multiple: true })}${inputField('productName', '主推产品/服务名称（建议填写）', '例如：五轴 CNC 加工中心')}`;
   if (key === 'business') return optionCards('businessModel', 'businessModels');
   if (key === 'markets') return `${optionCards('targetMarkets', 'targetMarkets', { multiple: true, three: true, exclusive: ['unsure'] })}${inputField('targetCountries', '具体国家（选填）', '例如：德国、美国、阿联酋')}`;
   if (key === 'customers') return optionCards('customerTypes', 'customerTypes', { multiple: true, three: true, exclusive: ['unclear'] });
   if (key === 'order') return optionCards('orderValue', 'orderValues');
   if (key === 'cycle') return optionCards('decisionCycle', 'decisionCycles');
   if (key === 'certification') return optionCards('certificationStatus', 'certificationStatuses');
-  if (key === 'assets') return optionCards('contentAssets', 'contentAssets', { multiple: true, three: true, exclusive: ['none'] });
   if (key === 'channels') return optionCards('currentChannels', 'currentChannels', { multiple: true, three: true, exclusive: ['none'] });
   if (key === 'problem') return optionCards('currentProblem', 'currentProblems');
   if (key === 'team') return `<div class="field-group"><span class="field-label required">谁负责海外客户</span>${optionCards('teamStatus', 'teamStatuses')}</div><div class="field-group"><span class="field-label required">询盘是否能及时响应</span>${optionCards('responseAbility', 'responseAbilities')}</div>`;
@@ -214,15 +222,14 @@ function currentValidationMessage() {
   const key = questions[diagnosisSession.step].key;
   const answers = diagnosisSession.answers;
   if (key === 'industry' && !answers.industryMain) return '请选择所属行业';
-  if (key === 'industry' && answers.industryMain === 'other-manufacturing' && !String(answers.industryCustom || '').trim()) return '请填写具体细分行业';
-  if (key === 'product' && !answers.productType) return '请选择产品类型';
+  if (key === 'industry' && (answers.industryMain === 'other-manufacturing' || String(answers.industrySub || '').endsWith('-other')) && !String(answers.industryCustom || '').trim()) return '请填写具体细分行业';
+  if (key === 'product' && !(answers.productTypes || []).length) return '请至少选择一项产品/服务特征';
   if (key === 'business' && !answers.businessModel) return '请选择商业模式';
   if (key === 'markets' && !(answers.targetMarkets || []).length) return '请至少选择一个目标市场状态';
   if (key === 'customers' && !(answers.customerTypes || []).length) return '请至少选择一种目标客户';
   if (key === 'order' && !answers.orderValue) return '请选择典型订单金额';
   if (key === 'cycle' && !answers.decisionCycle) return '请选择采购决策周期';
   if (key === 'certification' && !answers.certificationStatus) return '请选择认证与出口条件状态';
-  if (key === 'assets' && !(answers.contentAssets || []).length) return '请至少选择一项资料准备情况';
   if (key === 'channels' && !(answers.currentChannels || []).length) return '请至少选择一项当前推广情况';
   if (key === 'problem' && !answers.currentProblem) return '请选择当前最大问题';
   if (key === 'team' && (!answers.teamStatus || !answers.responseAbility)) return '请完成团队与响应能力两项选择';
@@ -326,7 +333,7 @@ function renderDiagnosis() {
   const savedStep = Number(localStorage.getItem(storageKeys.step) || 0);
   diagnosisSession = diagnosisSession || {
     step: Number.isInteger(savedStep) ? Math.max(0, Math.min(questions.length - 1, savedStep)) : 0,
-    answers: safeParse(localStorage.getItem(storageKeys.answers) || '{}', {}),
+    answers: normalizeAnswers(safeParse(localStorage.getItem(storageKeys.answers) || '{}', {})),
   };
   renderQuestion();
 }
@@ -347,13 +354,14 @@ function shortPlanMarkup(record) {
   const result = record.result;
   const firstChannel = result.channels[0];
   return `<section class="result-section summary-plan">
-    <div class="result-section-header"><span class="section-index">简</span><div class="result-section-title"><h2>你的简版出海方案</h2><p class="result-section-subtitle">先看方向摘要，再决定是否打开完整报告。</p></div></div>
+    <div class="result-section-header"><span class="section-index">简</span><div class="result-section-title"><h2>你的简版出海诊断</h2><p class="result-section-subtitle">先看问题卡点与方向摘要，再打开完整报告。</p></div></div>
     <div class="summary-plan-grid">
       <article><span>当前首要问题</span><strong>${escapeHtml(result.primaryIssue.title)}</strong><p>${escapeHtml(result.primaryIssue.explanation)}</p></article>
       <article><span>推荐网站类型</span><strong>${escapeHtml(result.website.type)}</strong><p>${escapeHtml(result.website.reason)}</p></article>
       <article><span>渠道第一优先级</span><strong>${escapeHtml(firstChannel.channel)}</strong><p>${escapeHtml(firstChannel.firstActions[0])}</p></article>
     </div>
-    <div class="first-actions"><h3>建议你先完成这3件事</h3>${listMarkup(result.plan90Days.day1to30.slice(0, 3))}</div>
+    <div class="service-summary"><span>建议代运营方式</span><h3>${escapeHtml(result.serviceMode.title)}</h3><p>${escapeHtml(result.serviceMode.reason)}</p><div class="module-tags">${result.serviceMode.scope.map((item) => `<span class="module-tag">${escapeHtml(item)}</span>`).join('')}</div></div>
+    <div class="first-actions"><h3>建议代运营项目先完成这3件事</h3>${listMarkup(result.plan90Days.day1to30.slice(0, 3))}</div>
   </section>`;
 }
 
@@ -362,11 +370,11 @@ function resultHero(record) {
   return `<section class="result-hero">
     <p class="eyebrow">YOUR GLOBAL DECISION REPORT</p>
     <h1>${escapeHtml(result.conclusion)}</h1>
-    <p class="result-hero-note">这是基于你当前填写信息的结构化判断，重点是帮助你排清先后顺序。</p>
+    <p class="result-hero-note">这是基于你当前填写信息的结构化判断，重点是找出真实卡点，并判断更适合的渠道与代运营方式。</p>
     <div class="verdict-grid">
       <article class="verdict-card"><span>海外推广判断</span><strong>${escapeHtml(result.verdicts.overseas)}</strong></article>
       <article class="verdict-card"><span>独立站判断</span><strong>${escapeHtml(result.verdicts.website)}</strong></article>
-      <article class="verdict-card"><span>建议最先关注</span><strong>${escapeHtml(result.channels[0].channel)}</strong></article>
+      <article class="verdict-card"><span>建议优先运营</span><strong>${escapeHtml(result.channels[0].channel)}</strong></article>
     </div>
   </section>`;
 }
@@ -385,7 +393,7 @@ function renderShortResult() {
     return;
   }
   const date = new Date(record.createdAt).toLocaleString('zh-CN', { hour12: false });
-  document.title = `简版出海方案｜${record.result.meta.industryName}｜${sales.accountName}`;
+  document.title = `简版出海诊断｜${record.result.meta.industryName}｜${sales.accountName}`;
   main.innerHTML = `<div class="result-page"><div class="result-shell">
     <div class="result-toolbar"><p>诊断生成于 ${escapeHtml(date)}</p><button class="button button-small button-ghost" data-restart type="button">重新诊断</button></div>
     ${resultHero(record)}
@@ -414,8 +422,9 @@ function consultantCard() {
       <div class="consultant-intro">
         <p>每家企业的产品、市场和获客基础都不一样。</p>
         <p>如果你对诊断结果还有疑问，可以让 Cici 帮你结合实际情况再看一遍，进一步梳理更适合你的出海方向和获客重点。</p>
+        <p>如果企业内部缺少海外运营团队，也可以进一步判断哪些环节适合交给专业团队持续代运营。</p>
       </div>
-      <p class="consultant-topics" aria-label="可沟通方向"><span>独立站</span><span>Google获客</span><span>LinkedIn开发</span><span>海外社媒</span></p>
+      <p class="consultant-topics" aria-label="可沟通方向"><span>独立站</span><span>Google运营</span><span>Facebook运营</span><span>LinkedIn运营</span></p>
     </div>
     <div class="consultant-qr-wrap">
       <h3>添加 Cici</h3>
@@ -501,19 +510,19 @@ function renderFullReport() {
   }
   const result = record.result;
   const readinessText = result.scores.readiness >= 75
-    ? '准备度较高，可以在补齐少量关键资料的同时启动渠道验证。'
+    ? '准备度较高，可以在补齐少量关键条件的同时启动渠道验证。'
     : result.scores.readiness >= 50
       ? '已经具备一部分基础，建议先补齐高优先级条件，再逐步放大投入。'
       : '当前仍处于基础准备阶段，应先完成产品、市场、客户和承接机制。';
   const reasons = result.reasons.map((item) => `<article class="reason-card ${escapeAttribute(item.type)}"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.explanation)}</p></article>`).join('');
   const channels = result.channels.map((channel) => `<article class="channel-card">
     <div class="channel-head"><span class="priority-badge">P${channel.priority}</span><div><h3>${escapeHtml(channel.channel)}</h3><p>${escapeHtml(channel.reason)}</p></div></div>
-    <div class="channel-body"><div><h4>先做什么</h4>${listMarkup(channel.firstActions)}</div><div><h4>暂时不要做什么</h4>${listMarkup(channel.avoidForNow, 'avoid')}</div></div>
+    <div class="channel-body"><div><h4>建议优先落地</h4>${listMarkup(channel.firstActions)}</div><div><h4>暂时不要投入</h4>${listMarkup(channel.avoidForNow, 'avoid')}</div></div>
   </article>`).join('');
   const timelineGroups = [
-    ['1—30天', '基础搭建', result.plan90Days.day1to30],
-    ['31—60天', '渠道验证', result.plan90Days.day31to60],
-    ['61—90天', '数据优化', result.plan90Days.day61to90],
+    ['1—30天', '诊断与基础搭建', result.plan90Days.day1to30],
+    ['31—60天', '代运营验证', result.plan90Days.day31to60],
+    ['61—90天', '数据复盘与放大', result.plan90Days.day61to90],
   ];
   const timeline = timelineGroups.map(([range, title, items]) => `<article class="timeline-card"><span>${range}</span><h3>${title}</h3>${listMarkup(items)}</article>`).join('');
   const missing = result.missingConditions.length
@@ -527,12 +536,12 @@ function renderFullReport() {
     <div class="report-cover-note">${escapeHtml(sales.accountName)} · 企业出海诊断报告</div>
     ${resultHero(record)}
     ${resultSection(1, '海外推广判断', '不是判断“能不能出海”，而是判断现在应该怎么启动。', `<div class="issue-banner"><span>${escapeHtml(result.primaryIssue.type)}</span><h3>${escapeHtml(result.primaryIssue.title)}</h3><p>${escapeHtml(result.primaryIssue.explanation)}</p></div>`)}
-    ${resultSection(2, '为什么这样判断', `系统从你的产品、市场、客户、内容与团队回答中生成了 ${result.reasons.length} 条依据。`, `<div class="reason-list">${reasons}</div>`)}
-    ${resultSection(3, '企业准备度', '分数只用于辅助查看，更需要关注判断依据与缺失条件。', `<div class="readiness-layout"><div class="readiness-score"><strong>${result.scores.readiness}</strong><span>/ 100</span><progress value="${result.scores.readiness}" max="100" aria-label="企业准备度 ${result.scores.readiness} 分"></progress></div><div class="readiness-copy"><h3>${escapeHtml(readinessText)}</h3><p>准备度综合考虑主推产品、目标市场、客户画像、出口条件、英文资料、工厂素材、团队和响应能力。</p></div></div>`)}
+    ${resultSection(2, '为什么这样判断', `系统从你的产品、市场、客户、渠道与团队回答中生成了 ${result.reasons.length} 条依据。`, `<div class="reason-list">${reasons}</div>`)}
+    ${resultSection(3, '企业准备度', '分数只用于辅助查看，更需要关注判断依据与启动条件。', `<div class="readiness-layout"><div class="readiness-score"><strong>${result.scores.readiness}</strong><span>/ 100</span><progress value="${result.scores.readiness}" max="100" aria-label="企业准备度 ${result.scores.readiness} 分"></progress></div><div class="readiness-copy"><h3>${escapeHtml(readinessText)}</h3><p>准备度综合考虑主推产品、目标市场、客户画像、出口条件、团队配置、询盘响应和既有渠道经验。</p></div></div>`)}
     ${resultSection(4, '推荐网站类型', '网站结构应该跟产品与客户的采购决策相匹配。', `<div class="website-type"><span>推荐类型</span><h3>${escapeHtml(result.website.type)}</h3><p>${escapeHtml(result.website.reason)}</p></div><h3>网站必须展示的内容</h3><div class="module-tags">${result.website.modules.map((item) => `<span class="module-tag">${escapeHtml(item)}</span>`).join('')}</div>`)}
-    ${resultSection(5, '渠道优先级', '每条路径都说明为什么、先做什么，以及暂时不要做什么。', `<div class="channel-list">${channels}</div>`)}
-    ${resultSection(6, '90天执行顺序', '先搭基础，再验证渠道，最后根据线索质量放大有效动作。', `<div class="timeline-grid">${timeline}</div>`)}
-    ${resultSection(7, '当前缺失条件', '这些条件不代表你不能出海，而是决定下一阶段投入效率。', missing)}
+    ${resultSection(5, '渠道与代运营建议', '先判断该投独立站、Google还是海外社媒，再决定代运营组合。', `<div class="service-mode"><span>建议代运营方式</span><h3>${escapeHtml(result.serviceMode.title)}</h3><p>${escapeHtml(result.serviceMode.reason)}</p><div class="module-tags">${result.serviceMode.scope.map((item) => `<span class="module-tag">${escapeHtml(item)}</span>`).join('')}</div></div><div class="channel-list">${channels}</div>`)}
+    ${resultSection(6, '90天执行顺序', '这不是让企业独自摸索的操作清单，而是判断代运营项目推进顺序与交付是否合理。', `<div class="timeline-grid">${timeline}</div>`)}
+    ${resultSection(7, '启动前需确认', '这些条件不代表你不能出海，而是决定下一阶段投入效率。', missing)}
     ${consultantCard()}
     <section class="download-panel no-print">
       <h2>把完整方案保存到手机或电脑</h2>

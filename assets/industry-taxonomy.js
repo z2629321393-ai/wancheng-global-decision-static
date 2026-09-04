@@ -16,11 +16,13 @@ const b2bSearch = ['B2B-heavy', 'technical', 'search-friendly', 'outbound-friend
 const visualB2c = ['B2C-heavy', 'visual-product', 'social-friendly'];
 
 function children(prefix, names, tags) {
-  return names.map(([id, name, ownTags]) => ({
+  const items = names.map(([id, name, ownTags]) => ({
     id: `${prefix}-${id}`,
     name,
     tags: ownTags || tags,
   }));
+  items.push({ id: `${prefix}-other`, name: '其他', tags });
+  return items;
 }
 
 export const INDUSTRIES = Object.freeze([
@@ -201,7 +203,7 @@ export const INDUSTRIES = Object.freeze([
     ], b2bTechnical),
   },
   {
-    id: 'other-manufacturing', name: '其他制造业', tags: [],
+    id: 'other-manufacturing', name: '其他', tags: [],
     children: [],
   },
 ]);
