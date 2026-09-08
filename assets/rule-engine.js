@@ -131,7 +131,7 @@ function buildReasons(a, tags, scores) {
   const customerClear = isClear(a.customerTypes, 'unclear');
 
   if (a.productName) {
-    pushReason(reasons, 'positive', '主推产品已有明确方向', `你填写了“${a.productName}”，后续可以围绕具体产品验证市场需求，而不是泛泛宣传整个工厂。`);
+    pushReason(reasons, 'positive', '主推产品已有明确方向', '后续可以围绕具体产品验证海外市场需求，集中呈现客户真正关心的卖点，而不是泛泛宣传整个工厂。');
   } else {
     pushReason(reasons, 'warning', '主推产品还不够明确', '海外推广应先确定主推产品优先级，否则独立站、Google广告和海外社媒都会失去焦点。');
   }

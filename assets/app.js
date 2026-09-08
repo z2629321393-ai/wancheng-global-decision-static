@@ -24,7 +24,9 @@ const sales = Object.freeze({
   serviceWechatLink: safeContactLink(window.WC_SALES?.serviceWechatLink),
 });
 
-const storagePrefix = `wc_static_${sales.id}`;
+// Version the local diagnosis data so reports created with older rules cannot
+// leak stale product details into a new diagnosis.
+const storagePrefix = `wc_static_v2_${sales.id}`;
 const storageKeys = {
   answers: `${storagePrefix}_answers`,
   step: `${storagePrefix}_step`,
@@ -111,6 +113,11 @@ function resetDiagnosis() {
   diagnosisSession = null;
 }
 
+function startNewDiagnosis() {
+  resetDiagnosis();
+  setRoute('diagnosis');
+}
+
 function clearPreparedPdf() {
   pdfGenerationToken += 1;
   releasePdfObjectUrl(preparedPdfUrl);
@@ -130,25 +137,24 @@ function previewIcon(name) {
 }
 
 function renderHome() {
-  document.title = `${sales.accountName}｜企业出海决策系统`;
+  document.title = `${sales.accountName}｜企业出海获客一站式服务系统`;
   main.innerHTML = `
     <section class="hero">
       <div class="shell hero-grid">
         <div class="hero-copy">
           <p class="eyebrow">WANCHENG GLOBAL DECISION</p>
-          <h1>你的企业，到底适不适合做<span>海外推广？</span></h1>
-          <p class="hero-subtitle">网站做了没询盘、Google广告投了看不懂、Facebook发了也没客户？如果你已经试过不少办法，却仍不知道预算该放在哪里，3分钟先判断问题卡在哪里，再看该优先做独立站、Google还是海外社媒。</p>
+          <h1>你的产品，到底适不适合做<span>海外推广？</span></h1>
+          <p class="hero-subtitle">不知道该先做独立站、Google，还是海外社媒？用3分钟看清产品、市场与客户基础，找到更适合的海外获客方向与代运营组合。</p>
           <div class="hero-actions">
-            <button class="button button-primary" data-go="diagnosis" type="button">开始免费诊断 <span aria-hidden="true">→</span></button>
-            <a class="button button-secondary" href="#how-it-works">先看判断逻辑</a>
-            ${serviceContactLink('有出海疑问？联系 Cici', 'button button-secondary')}
+            <button class="button button-primary hero-action-button" data-go="diagnosis" type="button">开始免费诊断 <span aria-hidden="true">→</span></button>
+            ${serviceContactLink('有出海疑问？联系 Cici', 'button button-secondary hero-action-button')}
           </div>
           <div class="trust-line" aria-label="诊断说明">
             <span>结果直接免费展示</span><span>无需提交联系方式</span><span>给出具体判断依据</span>
           </div>
         </div>
         <aside class="decision-panel" aria-label="诊断输出预览">
-          <p class="panel-kicker">不是简单打分，而是回答四个决策问题</p>
+          <p class="panel-kicker">围绕获客，回答4个关键问题</p>
           <div class="decision-list">
             <div class="decision-row"><span class="decision-number">01</span><div><strong>问题卡在流量、信任还是转化</strong><small>先找真实卡点，避免继续盲目铺渠道</small></div></div>
             <div class="decision-row"><span class="decision-number">02</span><div><strong>独立站应该优先、延后还是轻量验证</strong><small>不默认所有工厂都必须先建站</small></div></div>
@@ -163,14 +169,14 @@ function renderHome() {
     <section id="how-it-works" class="content-section white">
       <div class="shell principle-grid">
         <div class="principle-copy">
-          <p class="eyebrow">先定位，再选工具</p>
-          <h2 class="section-title">不是所有工厂，<br>都应该先建网站。</h2>
-          <p>独立站是承接工具，不是“做了就有客户”。只有先确定产品、市场和客户，才能继续判断独立站、Google、Facebook、LinkedIn与海外社媒应该怎么组合运营。</p>
+          <p class="eyebrow">先定位，再选平台与渠道</p>
+          <h2 class="section-title">企业出海，<br>核心是找到客户。</h2>
+          <p>独立站、Google、Facebook、LinkedIn都是海外获客工具。先明确产品卖给谁、客户在哪里、采购时看重什么，再判断由专业团队怎样组合运营。</p>
         </div>
         <div class="question-stack">
-          <article class="question-card"><span class="number">01</span><h3>你的产品卖什么？</h3><p>先选 1—3 个真正有竞争力、能被客户理解和比较的主推产品。</p></article>
+          <article class="question-card"><span class="number">01</span><h3>海外客户为什么选择你？</h3><p>先选 1—3 个真正有竞争力、能让海外客户快速看懂和比较的主推产品。</p></article>
           <article class="question-card"><span class="number">02</span><h3>你的目标市场是哪里？</h3><p>不同国家的需求、竞争、认证、语言和采购方式不同，第一阶段不必同时做全球。</p></article>
-          <article class="question-card"><span class="number">03</span><h3>你的客户到底是谁？</h3><p>经销商、品牌商、海外工厂、工程公司和消费者的决策链完全不同。</p></article>
+          <article class="question-card"><span class="number">03</span><h3>真正的采购客户是谁？</h3><p>经销商、品牌商、海外工厂、工程公司和消费者的决策链完全不同。</p></article>
         </div>
       </div>
     </section>
@@ -180,7 +186,7 @@ function renderHome() {
         <div class="section-heading">
           <p class="eyebrow">免费诊断结果</p>
           <h2 class="section-title">做完以后，你会得到什么？</h2>
-          <p class="section-lead">先看到简版方向，再自行打开并保存完整报告；不会弹出信息收集表单。</p>
+          <p class="section-lead">先看海外获客方向，再下载完整分析报告；全程无需填写联系方式。</p>
         </div>
         <div class="result-preview-grid">
           <article class="preview-card"><span class="preview-icon">${previewIcon('fit')}</span><h3>海外推广判断</h3><p>适合启动、小步验证，或先补基础条件，并说明具体原因。</p></article>
@@ -203,7 +209,7 @@ function renderHome() {
     </section>`;
 
   main.querySelectorAll('[data-go="diagnosis"]').forEach((button) => {
-    button.addEventListener('click', () => setRoute('diagnosis'));
+    button.addEventListener('click', startNewDiagnosis);
   });
 }
 
@@ -276,6 +282,7 @@ function bindQuestionFields() {
     const eventName = control.matches('input[type="text"], textarea') ? 'input' : 'change';
     control.addEventListener(eventName, () => {
       const field = control.dataset.field;
+      const previousValue = diagnosisSession.answers[field];
       if (control.type === 'checkbox') {
         const group = [...main.querySelectorAll(`input[type="checkbox"][data-field="${field}"]`)];
         if (control.checked && control.dataset.exclusive === 'true') {
@@ -286,6 +293,10 @@ function bindQuestionFields() {
         diagnosisSession.answers[field] = group.filter((item) => item.checked).map((item) => item.value);
       } else {
         diagnosisSession.answers[field] = control.value;
+      }
+      if ((field === 'industryMain' || field === 'industrySub') && previousValue !== control.value) {
+        diagnosisSession.answers.productTypes = [];
+        diagnosisSession.answers.productName = '';
       }
       if (field === 'industryMain') {
         diagnosisSession.answers.industrySub = '';
@@ -621,7 +632,7 @@ document.querySelectorAll('[data-home]').forEach((link) => link.addEventListener
 }));
 document.querySelectorAll('[data-start]').forEach((button) => button.addEventListener('click', (event) => {
   event.preventDefault();
-  setRoute('diagnosis');
+  startNewDiagnosis();
 }));
 window.addEventListener('hashchange', renderRoute);
 renderRoute();

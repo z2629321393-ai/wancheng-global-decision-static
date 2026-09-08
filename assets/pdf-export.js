@@ -175,8 +175,8 @@ export async function prepareReportPdf({ container, accountName }) {
   const pdfDocument = await window.PDFLib.PDFDocument.create();
   pdfDocument.setTitle(`${accountName} 企业出海诊断报告`);
   pdfDocument.setAuthor('万成云商');
-  pdfDocument.setCreator('万成云商企业出海决策系统');
-  pdfDocument.setProducer('万成云商企业出海决策系统');
+  pdfDocument.setCreator('万成云商企业出海获客一站式服务系统');
+  pdfDocument.setProducer('万成云商企业出海获客一站式服务系统');
 
   const state = {
     pdfDocument,

@@ -37,6 +37,12 @@ assert.doesNotMatch(app, /联系电话|微信号|专属版/);
 assert.match(app, /你想要出海的产品\/服务属于哪个行业/);
 assert.match(app, /你的产品\/服务特征有哪些/);
 assert.match(app, /你现在主要利用哪些渠道获客/);
+assert.match(app, /你的产品，到底适不适合做/);
+assert.match(app, /企业出海，<br>核心是找到客户/);
+assert.match(app, /先看海外获客方向，再下载完整分析报告/);
+assert.doesNotMatch(app, /先看判断逻辑/);
+assert.doesNotMatch(app, /你的企业，到底适不适合做/);
+assert.doesNotMatch(ruleEngine, /你填写了“\$\{a\.productName\}”/);
 assert.match(app, /你的团队配置/);
 assert.doesNotMatch(app, /key: 'assets'/, 'content-assets question should be removed');
 assert.match(app, /免费 · 1次顾问复核/);
@@ -69,6 +75,9 @@ assert.ok(html2canvas.length > 100_000, 'local html2canvas vendor file is incomp
 assert.ok(pdfLib.length > 400_000, 'local pdf-lib vendor file is incomplete');
 for (const version of accountVersions) {
   assert.match(version.page, /sales-config\.js/);
+  assert.match(version.page, /assets\/brand-logo\.png/);
+  assert.match(version.page, /企业出海获客一站式服务系统/);
+  assert.match(version.page, /让世界找到您、记住您、选择您/);
   assert.ok(version.config.includes(`accountName: '${version.accountName}'`));
   assert.ok(version.config.includes(`consultantName: '${version.consultantName}'`));
   assert.ok(version.config.includes(`qrImage: '${version.qrImage}'`));
