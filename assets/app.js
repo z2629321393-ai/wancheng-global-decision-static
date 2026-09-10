@@ -625,7 +625,7 @@ function renderRoute() {
   else renderHome();
 }
 
-document.querySelector('#sales-version').textContent = sales.accountName;
+document.querySelector('#sales-version').textContent = '万成云商｜只为提升出海企业品牌竞争力';
 document.querySelectorAll('[data-home]').forEach((link) => link.addEventListener('click', (event) => {
   event.preventDefault();
   setRoute('home');
