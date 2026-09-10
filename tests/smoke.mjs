@@ -59,7 +59,7 @@ assert.match(app, /备注「出海诊断」/);
 assert.match(app, /点击添加企业微信/);
 assert.match(app, /咨询 Cici/);
 assert.match(app, /有出海疑问/);
-assert.match(app, /万成云商｜只为提升出海企业品牌竞争力/);
+assert.match(app, /万成云商｜提升出海企业海外品牌竞争力/);
 assert.match(app, /work\.weixin\.qq\.com/);
 assert.doesNotMatch(app, /免费人工复核|领取对应行业的出海资料|定制出海方案建议/);
 assert.doesNotMatch(`${app}\n${ruleEngine}`, /主动开发/);
@@ -78,7 +78,7 @@ for (const version of accountVersions) {
   assert.match(version.page, /sales-config\.js/);
   assert.match(version.page, /assets\/brand-logo\.png/);
   assert.match(version.page, /企业出海获客一站式服务系统/);
-  assert.match(version.page, /万成云商｜只为提升出海企业品牌竞争力/);
+  assert.match(version.page, /万成云商｜提升出海企业海外品牌竞争力/);
   assert.match(version.page, /让世界找到您、记住您、选择您/);
   assert.ok(version.config.includes(`accountName: '${version.accountName}'`));
   assert.ok(version.config.includes(`consultantName: '${version.consultantName}'`));
