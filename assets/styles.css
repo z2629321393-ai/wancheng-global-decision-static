@@ -57,7 +57,7 @@ img { max-width: 100%; }
 .brand strong, .brand small { display: block; line-height: 1.2; }
 .brand strong { color: var(--navy-950); font-size: 17px; letter-spacing: .04em; }
 .brand small { margin-top: 4px; color: var(--muted); font-size: 11px; }
-.header-nav { display: flex; align-items: center; gap: 24px; color: #445066; font-size: 14px; }
+.header-nav { display: flex; align-items: center; gap: 18px; color: #445066; font-size: 14px; }
 .header-nav > a:not(.button):hover { color: var(--blue-600); }
 
 .button { min-height: 50px; padding: 0 22px; border: 1px solid transparent; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-weight: 700; transition: transform .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease; }
@@ -71,7 +71,7 @@ img { max-width: 100%; }
 .button-small { min-height: 40px; padding: 0 16px; border-radius: 10px; font-size: 14px; }
 .button-wide { width: 100%; }
 .text-link { color: var(--blue-700); font-weight: 700; }
-.sales-version { max-width: 260px; color: #5d59d6; font-size: 13px; font-weight: 800; line-height: 1.35; text-align: right; }
+.sales-version { max-width: 380px; color: #5d59d6; font-size: 13px; font-weight: 800; line-height: 1.35; text-align: right; white-space: nowrap; }
 
 .eyebrow { margin: 0 0 14px; color: #5d59d6; font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .section-title { margin: 0; color: var(--navy-950); font-size: clamp(28px, 4vw, 42px); line-height: 1.24; letter-spacing: -.035em; }
@@ -351,6 +351,7 @@ img { max-width: 100%; }
   .brand-logo { width: 39px; height: 44px; }
   .header-nav > a:not(.button) { display: none; }
   .brand small { display: none; }
+  .sales-version { max-width: 230px; font-size: 12px; white-space: normal; }
   .hero-grid { min-height: auto; padding: 64px 0; grid-template-columns: 1fr; gap: 42px; }
   .hero-copy h1 { font-size: clamp(38px, 11vw, 54px); }
   .principle-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -381,7 +382,7 @@ img { max-width: 100%; }
   .header-inner { gap: 10px; }
   .brand > span:last-child { display: none; }
   .header-nav { min-width: 0; gap: 10px; }
-  .sales-version { max-width: 145px; font-size: 12px; }
+  .sales-version { max-width: 145px; font-size: 11px; }
   .header-nav .button { min-height: 38px; padding-inline: 13px; }
   .hero-actions, .cta-buttons, .closing-actions { display: grid; }
   .hero-actions .button, .cta-buttons .button, .closing-actions .button { width: 100%; }
