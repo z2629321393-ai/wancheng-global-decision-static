@@ -78,6 +78,7 @@ for (const version of accountVersions) {
   assert.match(version.page, /sales-config\.js/);
   assert.match(version.page, /assets\/brand-logo\.png/);
   assert.match(version.page, /企业出海获客一站式服务系统/);
+  assert.match(version.page, /万成云商｜只为提升出海企业品牌竞争力/);
   assert.match(version.page, /让世界找到您、记住您、选择您/);
   assert.ok(version.config.includes(`accountName: '${version.accountName}'`));
   assert.ok(version.config.includes(`consultantName: '${version.consultantName}'`));
