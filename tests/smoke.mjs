@@ -59,6 +59,7 @@ assert.match(app, /备注「出海诊断」/);
 assert.match(app, /点击添加企业微信/);
 assert.match(app, /咨询 Cici/);
 assert.match(app, /有出海疑问/);
+assert.match(app, /万成云商｜只为提升出海企业品牌竞争力/);
 assert.match(app, /work\.weixin\.qq\.com/);
 assert.doesNotMatch(app, /免费人工复核|领取对应行业的出海资料|定制出海方案建议/);
 assert.doesNotMatch(`${app}\n${ruleEngine}`, /主动开发/);
